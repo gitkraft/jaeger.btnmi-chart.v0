@@ -3,17 +3,17 @@ Copyright Broadcom, Inc. All Rights Reserved.
 SPDX-License-Identifier: APACHE-2.0
 */}}
 
+{{- if and .Values.initDB (not .Values.initDBConfigMap) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ printf "%s-metrics-conf" (include "common.names.fullname" .) | trunc 63 | trimSuffix "-" }}
-  namespace: {{ include "common.names.namespace" . | quote }}
+  name: {{ printf "%s-init-scripts" (include "common.names.fullname" .) }}
+  namespace: {{ .Release.Namespace | quote }}
   labels: {{- include "common.labels.standard" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 4 }}
     app.kubernetes.io/part-of: cassandra
-    app.kubernetes.io/component: cassandra-exporter
   {{- if .Values.commonAnnotations }}
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
 data:
-  config.yml: |-
-    {{- include "common.tplvalues.render" (dict "value" .Values.metrics.configuration "context" $) | nindent 4 }}
+{{- include "common.tplvalues.render" (dict "value" .Values.initDB "context" .) | nindent 2 }}
+{{ end }}
